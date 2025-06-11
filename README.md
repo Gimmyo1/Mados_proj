@@ -1,1 +1,2 @@
-﻿# Unet for marine debris detection on MADOS dataset
+﻿# Unet for detecting marine pollutants and sea surface features on MADOS dataset
+
