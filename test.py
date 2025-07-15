@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 from dataset import MadosDataset, gen_weights, class_distr
 from torch.utils.data import DataLoader
 from unet import UNet
@@ -11,7 +12,7 @@ def test_unet(model, dataloader_test):
     model.eval()  
 
     weight = gen_weights(class_distr, c = 1.03)
-    criterion = torch.nn.CrossEntropyLoss(ignore_index=0, reduction='mean', weight=weight.to(device))
+    criterion = torch.nn.CrossEntropyLoss(ignore_index=-1, reduction='mean')
 
     #criterion = torch.nn.CrossEntropyLoss()
     test_loss = 0.0
@@ -28,32 +29,44 @@ def test_unet(model, dataloader_test):
             loss = criterion(outputs, labels)
             test_loss += loss.item()
 
-            # predictions
-            preds = torch.argmax(outputs, dim=1)
-            y_true.extend(labels.cpu().numpy().flatten())
-            y_pred.extend(preds.cpu().numpy().flatten())
+            
+            outputs = outputs.permute(0, 2, 3, 1).reshape(-1, outputs.shape[1])
+            labels = labels.reshape(-1)
+            mask = labels != -1
+            labels = labels[mask]
+            outputs = outputs[mask]
+
+
+
+            probs = torch.nn.functional.softmax(outputs, dim=1).cpu().numpy()
+            preds = np.argmax(probs, axis=1)
+            labels = labels.cpu().numpy()
+
+            y_pred += preds.tolist()
+            y_true += labels.tolist()
 
     avg_test_loss = test_loss / len(dataloader_test)
     print(f"Test Loss: {avg_test_loss:.4f}")
 
-    y_true = torch.tensor(y_true)
-    y_pred = torch.tensor(y_pred)
+    #y_true = torch.tensor(y_true)
+    #y_pred = torch.tensor(y_pred)
 
-    # Precision, Recall, F1-score
+    # Metriche
     precision = precision_score(y_true, y_pred, average='macro', zero_division=0)
     recall = recall_score(y_true, y_pred, average='macro', zero_division=0)
     f1 = f1_score(y_true, y_pred, average='macro', zero_division=0)
 
-    # Iou
-    iou = jaccard_score(y_true, y_pred, average='macro', zero_division=0)
+    # mIou
+    miou = jaccard_score(y_true, y_pred, average='macro', zero_division=0)
+    accuracy = (np.array(y_true) == np.array(y_pred)).mean()
 
-    print(f"Test Accuracy: {(y_true == y_pred).sum().item() / len(y_true):.4f}")
+    print(f"Test Accuracy: {accuracy:.4f}")
     print(f"Precision: {precision:.4f}")
     print(f"Recall: {recall:.4f}")
     print(f"F1 Score: {f1:.4f}")
-    print(f"IoU: {iou:.4f}")
+    print(f"mIoU: {miou:.4f}")
 
-    return avg_test_loss, precision, recall, f1, iou
+    return avg_test_loss, precision, recall, f1, miou
 
 
 if __name__ == "__main__":
@@ -62,12 +75,12 @@ if __name__ == "__main__":
     dataloader_test = DataLoader(dataset_test, batch_size=4, shuffle=False)
 
     
-    model = UNet(in_channels=4, out_channels=16)
+    model = UNet(input_bands=4, output_classes=15, hidden_channels=64)
 
     
-    model.load_state_dict(torch.load("unet_mados.pth"))
+    model.load_state_dict(torch.load("best_model.pth"))
     print("Modello caricato.")
 
     
-    test_loss, precision, recall, f1, iou = test_unet(model, dataloader_test)
-    print(f"Test completato. Loss: {test_loss:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f}, IoU: {iou:.4f}")
+    test_loss, precision, recall, f1, miou = test_unet(model, dataloader_test)
+    print(f"Test completato. Loss: {test_loss:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f}, mIoU: {miou:.4f}")
