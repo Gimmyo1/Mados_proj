@@ -116,7 +116,7 @@ if __name__ == "__main__":
     dataset_val = MadosDataset(mode='val')
     dataloader_val = DataLoader(dataset_val, batch_size=4, shuffle=False)
 
-    model = UNet(input_bands=4, output_classes=15, hidden_channels=64)
+    model =  UNet(in_channels=4, out_channels=15)
     
     trained_model = train_unet(model, dataloader_train, dataloader_val, num_epochs=40, learning_rate=0.0001)
     
