@@ -11,8 +11,8 @@ root_dir = "d:/Utente/Desktop/Mados_proj/data/MADOS"
 split_dir = "d:/Utente/Desktop/Mados_proj/data/MADOS/splits"
 
 # Distribuzione delle classi normalizzata
-class_distr = torch.Tensor([0.00336, 0.00241, 0.00336, 0.00142, 0.00775, 0.18452, 
- 0.34775, 0.20638, 0.00062, 0.1169, 0.09188, 0.01309, 0.00917, 0.00176, 0.00963])
+class_distr = torch.Tensor([0.0034, 0.0024, 0.0034, 0.0014, 0.0078, 0.1845, 
+ 0.3478, 0.2064, 0.0006, 0.117, 0.0919, 0.0131, 0.0092, 0.0018, 0.0096])
 
 
 

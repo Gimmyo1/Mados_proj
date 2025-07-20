@@ -1,25 +1,32 @@
 import torch
 import torch.nn as nn
 import numpy as np
+import os
 import torch.optim as optim
 from unet import UNet
-from dataset import MadosDataset,gen_weights, class_distr
+from dataset import MadosDataset,class_weights, class_distr
 from torch.utils.data import DataLoader
 from sklearn.metrics import precision_score, recall_score, f1_score, jaccard_score
+from results import plot_training_results, save_training_results
 
-def train_unet(model, dataloader_train, dataloader_val, num_epochs=10, learning_rate=0.001):
+def train_unet(model, dataloader_train, dataloader_val, num_epochs=10, learning_rate=0.001, save_dir="results/"):
+
+
+    
+
     
     device = torch.device( "cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     
-    weight = gen_weights(class_distr)
+    weight = class_weights(class_distr)
     criterion = nn.CrossEntropyLoss(ignore_index=-1, reduction='mean', weight=weight.to(device))
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     best_miou = 0
     train_losses = []
     val_losses = []
     miou_scores = []
+    iou_per_class_history = []
 
     for epoch in range(num_epochs):
         model.train()
@@ -39,10 +46,12 @@ def train_unet(model, dataloader_train, dataloader_val, num_epochs=10, learning_
             running_loss += loss.item()
             print(f"Epoch [{epoch+1}/{num_epochs}], Batch Loss: {loss.item():.4f}")
         avg_loss = running_loss / len(dataloader_train)
+        train_losses.append(avg_loss)
         print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}")
 
-       
+
         model.eval()
+        best_epoch = 0
         val_loss = 0.0
         y_true = []
         y_pred = []
@@ -74,51 +83,74 @@ def train_unet(model, dataloader_train, dataloader_val, num_epochs=10, learning_
         val_losses.append(avg_val_loss)
         print(f"Epoch [{epoch+1}/{num_epochs}], Validation Loss: {avg_val_loss:.4f}")
 
-        # Calcolo delle metriche
-        #precision = precision_score(y_true, y_pred, average='macro', zero_division=0)
-        #recall = recall_score(y_true, y_pred, average='macro', zero_division=0)
-        #f1 = f1_score(y_true, y_pred, average='macro', zero_division=0)
+        
+        num_classes = 15
+        iou_per_class = jaccard_score(y_true, y_pred, average=None, labels=range(num_classes))
         miou = jaccard_score(y_true, y_pred, average='macro', zero_division=0)
         miou_scores.append(miou)
-
-        #iou_per_class, miou = calculate_iou_per_class(np.array(y_true), np.array(y_pred), num_classes)
-
+        iou_per_class_history.append(iou_per_class)
 
 
         print(f"Epoch [{epoch+1}/{num_epochs}], Validation mIoU: {miou:.4f}")
-        #print(f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f}")
 
        
         if miou > best_miou:
             best_miou = miou
-            torch.save(model.state_dict(), "best_model.pth")
-            print("Miglior modello salvato")
+            best_epoch = epoch + 1
+            torch.save(model.state_dict(), os.path.join(save_dir, "best_model.pth"))
+            print("miglior modello salvato")
 
 
         
 
     
     
-    print("Training finito")
-    return model
+    print("training finito")
+    return model, train_losses, val_losses, miou_scores,iou_per_class_history, best_epoch
 
 
 
 
 if __name__ == "__main__":
-    # Esempio di utilizzo
+
+
+    experiment_id = "Model_3"
+    save_dir = f"results/{experiment_id}/"
+    os.makedirs(save_dir, exist_ok=True)
     
+    learning_rate = 0.0001
+    num_epochs = 40
+    batch_size = 5
+    augmentation = True
 
     
     dataset_train = MadosDataset(mode='train')
-    dataloader_train = DataLoader(dataset_train, batch_size=4, shuffle=True)
+    dataloader_train = DataLoader(dataset_train, batch_size=batch_size, shuffle=True)
 
     dataset_val = MadosDataset(mode='val')
-    dataloader_val = DataLoader(dataset_val, batch_size=4, shuffle=False)
+    dataloader_val = DataLoader(dataset_val, batch_size=batch_size, shuffle=False)
 
     model =  UNet(in_channels=4, out_channels=15)
     
-    trained_model = train_unet(model, dataloader_train, dataloader_val, num_epochs=40, learning_rate=0.0001)
+  
+
     
-    # Salva il modello addestrato
-    torch.save(trained_model.state_dict(), "unet_mados.pth")
+    trained_model, train_losses, val_losses, miou_scores,iou_per_class, best_epoch = train_unet(model, dataloader_train, dataloader_val, num_epochs=num_epochs, learning_rate=learning_rate, save_dir=save_dir)
+    
+    
+    
+    #torch.save(trained_model.state_dict(), "unet_mados.pth")
+
+    plot_training_results(train_losses, val_losses, miou_scores, num_classes=15, save_dir=save_dir)
+
+    save_training_results(
+        model_name="UNet",
+        learning_rate=learning_rate,
+        batch_size=batch_size,
+        train_loss=train_losses[best_epoch-1],
+        val_loss=val_losses[best_epoch-1],
+        miou=miou_scores[best_epoch-1],
+        iou_per_class=iou_per_class[best_epoch-1],
+        augmentation=augmentation,
+        save_dir=save_dir
+    )
