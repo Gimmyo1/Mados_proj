@@ -1,0 +1,36 @@
+[Running] python -u "d:\Utente\Desktop\Mados proj\test.py"
+Totale crop ignorati: 0
+Numero di campioni: 1433
+D:\Programmi\anaconda3\envs\mados\Lib\site-packages\rasterio\__init__.py:356: NotGeoreferencedWarning: Dataset has no geotransform, gcps, or rpcs. The identity matrix will be returned.
+  dataset = DatasetReader(path, driver=driver, sharing=sharing, **kwargs)
+Totale crop ignorati: 0
+d:\Utente\Desktop\Mados proj\test.py:101: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  model.load_state_dict(torch.load(model_path))
+Modello caricato.
+D:\Programmi\anaconda3\envs\mados\Lib\site-packages\rasterio\__init__.py:356: NotGeoreferencedWarning: Dataset has no geotransform, gcps, or rpcs. The identity matrix will be returned.
+  dataset = DatasetReader(path, driver=driver, sharing=sharing, **kwargs)
+Test Loss: 0.7910
+Classe 1: IoU = 0.4332 F1 Score = 0.6045
+Classe 2: IoU = 0.0821 F1 Score = 0.1518
+Classe 3: IoU = 0.4506 F1 Score = 0.6212
+Classe 4: IoU = 0.4593 F1 Score = 0.6295
+Classe 5: IoU = 0.4395 F1 Score = 0.6106
+Classe 6: IoU = 0.4229 F1 Score = 0.5944
+Classe 7: IoU = 0.8200 F1 Score = 0.9011
+Classe 8: IoU = 0.9890 F1 Score = 0.9945
+Classe 9: IoU = 0.5370 F1 Score = 0.6987
+Classe 10: IoU = 0.6892 F1 Score = 0.8160
+Classe 11: IoU = 0.3563 F1 Score = 0.5254
+Classe 12: IoU = 0.3659 F1 Score = 0.5357
+Classe 13: IoU = 0.7141 F1 Score = 0.8332
+Classe 14: IoU = 0.0491 F1 Score = 0.0937
+Classe 15: IoU = 0.3091 F1 Score = 0.4722
+Test Accuracy: 0.8422
+Precision: 0.6943
+Recall: 0.6278
+F1 Score: 0.6055
+mIoU: 0.4745
+Test completato. Loss: 0.7910, Precision: 0.6943, Recall: 0.6278, F1 Score: 0.6055, mIoU: 0.4745
+
+[Done] exited with code=0 in 78.893 seconds
+
