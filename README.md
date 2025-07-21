@@ -1,6 +1,6 @@
 ﻿# Unet for detecting marine pollutants and sea surface features on MADOS dataset
 
- Questo progetto utilizza l'architettura U-Net, una rete neurale convoluzionale basata su encoder-decoder, per il rilevamento e la segmentazione di inquinanti marini (chiazze di petrolio) e caratteristiche fisiche della superficie del mare (es. navi, onde, piattaforme petrolifere, diverse condizioni in cui l'acqua di può presentare ) sfruttando il dataset MADOS (Marine Debris Observation Satellite).
+ Questo progetto utilizza l'architettura U-Net, una rete neurale convoluzionale basata su encoder-decoder, per il rilevamento e la segmentazione di inquinanti marini (chiazze di petrolio) e caratteristiche fisiche della superficie del mare (es. navi, onde, piattaforme petrolifere, diverse condizioni in cui l'acqua di può presentare ) sfruttando il dataset MADOS (Marine Debris Observation Satellite) consultabile al seguente link: https://marine-pollution.github.io/.
 
 1.  Marine Debris
 
